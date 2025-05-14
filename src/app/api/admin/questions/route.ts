@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Пожалуйста авторизируйстель" }, { status: 401 });
+      return NextResponse.json({ error: "Неавторизован" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -48,7 +48,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Пожалуйста авторизируйстель" }, { status: 401 });
+      return NextResponse.json({ error: "Неавторизован" }, { status: 401 });
     }
 
     const id = parseInt(params.id);
