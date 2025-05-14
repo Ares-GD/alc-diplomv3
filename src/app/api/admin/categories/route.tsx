@@ -7,12 +7,14 @@ interface CountResult extends RowDataPacket {
 }
 
 function isCountResultArray(result: any): result is CountResult[] {
-  return Array.isArray(result) && result.every(item => typeof item === 'object' && item !== null && 'count' in item);
+  return Array.isArray(result) && 
+         result.every(item => typeof item === 'object' && 
+         item !== null && 'count' in item);
 }
 
 export async function GET() {
   try {
-    const [rows] = await pool.query('SELECT * FROM categorys ORDER BY name ASC');
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM categorys ORDER BY name ASC');
     return NextResponse.json(rows);
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error);
@@ -23,11 +25,25 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const { name, description } = await request.json();
-    const [existing] = await pool.query('SELECT id FROM categorys WHERE name = ?', [name]);
+    
+    if (!name || typeof name !== 'string') {
+      return NextResponse.json({ error: 'Название категории обязательно' }, { status: 400 });
+    }
+    
+    const [existing]: [RowDataPacket[], any] = await pool.query(
+      'SELECT id FROM categorys WHERE name = ?', 
+      [name]
+    );
+    
     if (Array.isArray(existing) && existing.length > 0) {
       return NextResponse.json({ error: 'Категория с таким названием уже существует' }, { status: 400 });
     }
-    await pool.query('INSERT INTO categorys (name, description) VALUES (?, ?)', [name, description || null]);
+    
+    await pool.query(
+      'INSERT INTO categorys (name, description) VALUES (?, ?)', 
+      [name, description ?? null]
+    );
+    
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error('Ошибка создания категории:', error);
@@ -45,22 +61,50 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Некорректный ID категории' }, { status: 400 });
     }
 
-    const [existing] = await pool.query<RowDataPacket[]>('SELECT id FROM categorys WHERE id = ?', [id]);
+    if (!name || typeof name !== 'string') {
+      return NextResponse.json({ error: 'Название категории обязательно' }, { status: 400 });
+    }
+
+    const [existing]: [RowDataPacket[], any] = await pool.query(
+      'SELECT id FROM categorys WHERE id = ?', 
+      [id]
+    );
+    
     if (!Array.isArray(existing) || existing.length === 0) {
       return NextResponse.json({ error: 'Категория не найдена' }, { status: 404 });
     }
 
-    const [duplicateCheck] = await pool.query<RowDataPacket[]>('SELECT id FROM categorys WHERE name = ? AND id != ?', [name, id]);
+    const [duplicateCheck]: [RowDataPacket[], any] = await pool.query(
+      'SELECT id FROM categorys WHERE name = ? AND id != ?', 
+      [name, id]
+    );
+    
     if (Array.isArray(duplicateCheck) && duplicateCheck.length > 0) {
       return NextResponse.json({ error: 'Категория с таким названием уже существует' }, { status: 400 });
     }
 
-    const [usedInProducts] = await pool.query<CountResult[]>('SELECT COUNT(*) AS count FROM products WHERE category = ?', [id]);
+    const [usedInProducts]: [CountResult[], any] = await pool.query(
+      'SELECT COUNT(*) AS count FROM products WHERE category = ?', 
+      [id]
+    );
+    
     if (isCountResultArray(usedInProducts) && usedInProducts[0].count > 0) {
       return NextResponse.json({ error: 'Нельзя редактировать категорию, которая используется в продуктах' }, { status: 400 });
     }
 
-    await pool.query('UPDATE categorys SET name = ?, description = ? WHERE id = ?', [name, description || null, id]);
+    const [result] = await pool.query(
+      'UPDATE categorys SET name = ?, description = ? WHERE id = ?', 
+      [name, description ?? null, id]
+    );
+
+    if (typeof result === 'object' && 'affectedRows' in result && result.affectedRows === 0) {
+      return NextResponse.json(
+        { error: 'Не удалось обновить категорию — данные не изменились или запись не найдена' },
+        { status: 400 }
+      );
+    }
+
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Ошибка обновления категории:', error);
@@ -77,7 +121,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Некорректный ID категории' }, { status: 400 });
     }
 
-    const [usedInProducts] = await pool.query<CountResult[]>('SELECT COUNT(*) AS count FROM products WHERE category = ?', [id]);
+    const [usedInProducts]: [CountResult[], any] = await pool.query(
+      'SELECT COUNT(*) AS count FROM products WHERE category = ?', 
+      [id]
+    );
+    
     if (isCountResultArray(usedInProducts) && usedInProducts[0].count > 0) {
       return NextResponse.json({ error: 'Нельзя удалить категорию, которая используется в продуктах' }, { status: 400 });
     }

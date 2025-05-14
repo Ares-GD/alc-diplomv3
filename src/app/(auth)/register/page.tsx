@@ -492,10 +492,18 @@ const RegisterPage = () => {
 
             {/* Глобальная ошибка */}
             {errors.form && (
-              <p className="text-red-500 text-sm text-center mt-4">
-                {errors.form}
-              </p>
-            )}
+                <div className="flex items-center justify-between">
+                  <p className="text-red-500 text-sm text-center mt-4 flex-1">
+                    {errors.form}
+                  </p>
+                  <button 
+                    onClick={() => setErrors({ form: null })}
+                    className="ml-2 text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
           </form>
         </div>
       </div>
