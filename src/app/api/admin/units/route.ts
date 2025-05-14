@@ -1,3 +1,4 @@
+// app/api/units/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
@@ -19,9 +20,7 @@ interface APIResponse {
 }
 
 function isCountResultArray(result: any): result is CountResult[] {
-  return Array.isArray(result) && 
-         result.every(item => typeof item === 'object' && 
-         item !== null && 'count' in item);
+  return Array.isArray(result) && result.every(item => typeof item === 'object' && item !== null && 'count' in item);
 }
 
 async function executeQuery<T extends RowDataPacket[]>(query: string, values?: any[]): Promise<T> {
@@ -74,46 +73,35 @@ export async function PUT(request: NextRequest) {
     const url = new URL(request.url);
     const id = parseInt(url.searchParams.get('id') || '0');
     const { name } = await request.json();
-    
     if (!id || Number.isNaN(id) || id <= 0) {
       const response: APIResponse = { success: false, error: 'Некорректный ID единицы' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       const response: APIResponse = { success: false, error: 'Название единицы измерения не указано или некорректно' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     const sanitized = name.trim();
     const existing = await executeQuery<Unit[]>('SELECT id FROM units WHERE id = ?', [id]);
-    
     if (existing.length === 0) {
       const response: APIResponse = { success: false, error: 'Единица измерения не найдена' };
       return NextResponse.json(response, { status: 404 });
     }
-    
     const duplicateCheck = await executeQuery<Unit[]>('SELECT id FROM units WHERE name = ? AND id != ?', [sanitized, id]);
-    
     if (duplicateCheck.length > 0) {
       const response: APIResponse = { success: false, error: 'Единица с таким названием уже существует' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     const usedInPackaging = await executeQuery<CountResult[]>('SELECT COUNT(*) AS count FROM packaging_types WHERE unit = ?', [id]);
-    
     if (isCountResultArray(usedInPackaging) && usedInPackaging[0].count > 0) {
       const response: APIResponse = { success: false, error: 'Нельзя редактировать единицу, которая используется в упаковках' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     const [result] = await pool.query('UPDATE units SET name = ? WHERE id = ?', [sanitized, id]);
-    
     if (typeof result === 'object' && 'affectedRows' in result && result.affectedRows === 0) {
       const response: APIResponse = { success: false, error: 'Не удалось обновить единицу — данные не изменились или запись не найдена' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     const response: APIResponse = { success: true, message: 'Единица измерения успешно обновлена' };
     return NextResponse.json(response);
   } catch (error) {
@@ -127,19 +115,15 @@ export async function DELETE(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const id = parseInt(url.searchParams.get('id') || '0');
-    
     if (!id || Number.isNaN(id) || id <= 0) {
       const response: APIResponse = { success: false, error: 'Некорректный ID единицы' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     const usedInPackaging = await executeQuery<CountResult[]>('SELECT COUNT(*) AS count FROM packaging_types WHERE unit = ?', [id]);
-    
     if (isCountResultArray(usedInPackaging) && usedInPackaging[0].count > 0) {
       const response: APIResponse = { success: false, error: 'Нельзя удалить единицу, которая используется в упаковках' };
       return NextResponse.json(response, { status: 400 });
     }
-    
     await pool.query('DELETE FROM units WHERE id = ?', [id]);
     const response: APIResponse = { success: true, message: 'Единица измерения успешно удалена' };
     return NextResponse.json(response);

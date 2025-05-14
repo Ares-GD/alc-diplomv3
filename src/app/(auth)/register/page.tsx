@@ -460,7 +460,7 @@ const RegisterPage = () => {
               />
               <label htmlFor="agreement" className="text-sm text-[var(--color-gray)]">
                 Даю согласие на обработку
-                <a href="/policy" className="text-[var(--color-accent)] underline ml-1">
+                <a href="/privacy" className="text-[var(--color-accent)] underline ml-1">
                   Политики конфиденциальности
                 </a>
               </label>

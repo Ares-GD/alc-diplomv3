@@ -1,5 +1,7 @@
+// app/admin/categories/components/CategoryTable.tsx
 'use client';
-import { Category } from '../types';
+import { Category } from '@/app/admin/categories/types';
+import React from 'react';
 
 interface Props {
   categories: Category[];
@@ -14,9 +16,17 @@ export default function CategoryTable({
 }: Props) {
   return (
     <div className="mb-12 mt-12 overflow-x-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Категории</h2>
+        <button
+          onClick={() => setEditingCategory({ id: 0, name: '', description: '' })}
+          className="px-4 py-2 bg-[var(--color-accent)] text-[var(--color-dark)] rounded-lg hover:opacity-90 transition-opacity"
+        >
+          Добавить категорию
+        </button>
+      </div>
+      
       <div className="bg-[var(--color-dark)] rounded-lg overflow-hidden shadow-md">
-       
-        
         <table className="min-w-full divide-y divide-[var(--color-gray)]">
           <thead className="bg-[var(--color-gray)]">
             <tr>
@@ -31,7 +41,7 @@ export default function CategoryTable({
               <tr key={category.id} className="hover:bg-[var(--color-gray)] transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">{category.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{category.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{category.description}</td>
+                <td className="px-6 py-4 whitespace-pre-line">{category.description || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
                   <button
                     onClick={() => setEditingCategory(category)}

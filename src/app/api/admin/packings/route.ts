@@ -1,3 +1,4 @@
+// app/api/packings/route.tsx
 import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import fs from 'fs/promises';
@@ -15,6 +16,8 @@ interface PackagingRow extends RowDataPacket {
   volume: number;
   unit_name: string | null;
   unit_id: number | null;
+  form_type_name: string | null;
+  form_type_id: number | null;
   image: string | null;
 }
 
@@ -38,10 +41,13 @@ export async function GET(request: NextRequest) {
          pt.volume, 
          u.name AS unit_name, 
          pt.unit AS unit_id,
+         ft.name AS form_type_name,
+         pt.form_type AS form_type_id,
          pt.image
        FROM packaging_types pt
        LEFT JOIN materials m ON pt.material = m.id
-       LEFT JOIN units u ON pt.unit = u.id`
+       LEFT JOIN units u ON pt.unit = u.id
+       LEFT JOIN form_types ft ON pt.form_type = ft.id`
     );
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
@@ -58,6 +64,7 @@ export async function POST(request: NextRequest) {
     const material_id = formData.get('material') as string;
     const volume = parseFloat(formData.get('volume') as string);
     const unit_id = formData.get('unit') as string;
+    const form_type_id = formData.get('form_type') as string;
     const file = formData.get('image') as File | null;
 
     // Проверка обязательных полей
@@ -78,16 +85,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
       const ext = path.extname(file.name).toLowerCase() || 
                  file.type.split('/').pop() || 
                  '.jpg';
-      
       const filename = `${uuidv4()}${ext}`;
       const uploadPath = path.join(process.cwd(), 'public', 'images', 'packings', filename);
+      const dir = path.dirname(uploadPath);
       
       // Создание директории, если её нет
-      const dir = path.dirname(uploadPath);
       try {
         await fs.mkdir(dir, { recursive: true });
       } catch (err) {
@@ -97,7 +102,7 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-      
+
       // Сохранение файла
       const buffer = await file.arrayBuffer();
       try {
@@ -115,17 +120,18 @@ export async function POST(request: NextRequest) {
     // Вставка записи
     await pool.query(
       `INSERT INTO packaging_types 
-       (name, material, volume, unit, image) 
-       VALUES (?, ?, ?, ?, ?)`,
+       (name, material, volume, unit, form_type, image) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
       [
         name, 
         Number(material_id || null), 
         volume, 
         Number(unit_id || null), 
+        Number(form_type_id || null),
         imagePath
       ]
     );
-    
+
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     console.error('Ошибка создания упаковки:', error);
@@ -138,30 +144,30 @@ export async function PUT(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const id = parseInt(url.searchParams.get('id') || '0');
-    
+
     if (!id || Number.isNaN(id) || id <= 0) {
       return NextResponse.json(
         { error: 'Некорректный ID упаковки' },
         { status: 400 }
       );
     }
-    
+
     const formData = await request.formData();
     const name = formData.get('name') as string;
     const material_id = formData.get('material') as string;
     const volume = parseFloat(formData.get('volume') as string);
     const unit_id = formData.get('unit') as string;
+    const form_type_id = formData.get('form_type') as string;
     const file = formData.get('image') as File | null;
-    
+
     // Получение текущей записи для обработки изображения
     const [existingRows] = await pool.query<RowDataPacket[]>(
       'SELECT image FROM packaging_types WHERE id = ?', 
       [id]
     );
-    
     const existingImage = existingRows.length > 0 ? (existingRows[0] as { image: string }).image : null;
     let imagePath = existingImage;
-    
+
     // Обработка изображения
     if (file && file.size > 0) {
       // Проверка типа файла
@@ -171,15 +177,13 @@ export async function PUT(request: NextRequest) {
           { status: 400 }
         );
       }
-
       const ext = path.extname(file.name).toLowerCase() || 
                  file.type.split('/').pop() || 
                  '.jpg';
-      
       const filename = `${uuidv4()}${ext}`;
       const uploadPath = path.join(process.cwd(), 'public', 'images', 'packings', filename);
       const dir = path.dirname(uploadPath);
-      
+
       // Создание директории, если её нет
       try {
         await fs.mkdir(dir, { recursive: true });
@@ -190,13 +194,13 @@ export async function PUT(request: NextRequest) {
           { status: 500 }
         );
       }
-      
+
       // Сохранение файла
       const buffer = await file.arrayBuffer();
       try {
         await fs.writeFile(uploadPath, Buffer.from(buffer));
         imagePath = `/images/packings/${filename}`;
-        
+
         // Удаление старого файла, если он существует
         if (existingImage) {
           const oldFilePath = path.join(process.cwd(), 'public', existingImage);
@@ -214,11 +218,10 @@ export async function PUT(request: NextRequest) {
         );
       }
     }
-    
+
     // Проверка существования связанных записей
     const checkForeignKey = async (table: string, field: string, value: number | null): Promise<boolean> => {
       if (value === null) return true;
-      
       try {
         const [rows] = await pool.query<RowDataPacket[]>(
           `SELECT id FROM ?? WHERE id = ?`, 
@@ -230,24 +233,32 @@ export async function PUT(request: NextRequest) {
         return false;
       }
     };
-    
+
     const materialExists = await checkForeignKey('materials', 'id', Number(material_id));
     const unitExists = await checkForeignKey('units', 'id', Number(unit_id));
-    
+    const formTypeExists = await checkForeignKey('form_types', 'id', Number(form_type_id));
+
     if (!materialExists) {
       return NextResponse.json(
         { error: `Материал с ID ${material_id} не найден` },
         { status: 400 }
       );
     }
-    
+
     if (!unitExists) {
       return NextResponse.json(
         { error: `Единица измерения с ID ${unit_id} не найдена` },
         { status: 400 }
       );
     }
-    
+
+    if (!formTypeExists) {
+      return NextResponse.json(
+        { error: `Тип формы с ID ${form_type_id} не найден` },
+        { status: 400 }
+      );
+    }
+
     // Обновление записи
     await pool.query(
       `UPDATE packaging_types SET 
@@ -255,11 +266,12 @@ export async function PUT(request: NextRequest) {
          material = ?, 
          volume = ?, 
          unit = ?, 
+         form_type = ?,
          image = ?
        WHERE id = ?`,
-      [name, Number(material_id), volume, Number(unit_id), imagePath, id]
+      [name, Number(material_id), volume, Number(unit_id), Number(form_type_id), imagePath, id]
     );
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Ошибка обновления упаковки:', error);
@@ -272,38 +284,37 @@ export async function DELETE(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const id = parseInt(url.searchParams.get('id') || '0');
-    
+
     if (!id || Number.isNaN(id) || id <= 0) {
       return NextResponse.json(
         { error: 'Некорректный ID упаковки' },
         { status: 400 }
       );
     }
-    
+
     // Проверка связей с продуктами
     const [productCheck] = await pool.query<ProductCheckResult[]>(
       `SELECT COUNT(*) AS count FROM product_packaging WHERE packaging_type_id = ?`,
       [id]
     );
-    
+
     if (productCheck.length > 0 && productCheck[0].count > 0) {
       return NextResponse.json(
         { error: 'Нельзя удалить упаковку, которая используется в продуктах' },
         { status: 400 }
       );
     }
-    
+
     // Получение информации о изображении
     const [imageRow] = await pool.query<RowDataPacket[]>(
       'SELECT image FROM packaging_types WHERE id = ?', 
       [id]
     );
-    
     const imagePath = imageRow.length > 0 ? (imageRow[0] as { image: string }).image : null;
-    
+
     // Удаление записи
     await pool.query(`DELETE FROM packaging_types WHERE id = ?`, [id]);
-    
+
     // Удаление связанного изображения
     if (imagePath) {
       const filePath = path.join(process.cwd(), 'public', imagePath);
@@ -313,7 +324,7 @@ export async function DELETE(request: NextRequest) {
         console.warn('Не удалось удалить файл:', filePath, err);
       }
     }
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Ошибка удаления упаковки:', error);

@@ -19,7 +19,7 @@ export default withAuth(
         "/admin/orders": ["admin", "stmanager", "director", "manager"],
         "/admin/packings": ["admin", "stmanager", "director", "manager"],
         "/admin/categories": ["admin", "stmanager", "director", "manager"],
-        "/admin/users": ["admin", "stmanager", "director", "manager"],
+        "/admin/users": ["admin", "stmanager", "director"],
         "/admin/questions": ["admin", "stmanager", "director", "manager"],
         "/admin/products": ["admin", "stmanager", "director", "manager"]
       }

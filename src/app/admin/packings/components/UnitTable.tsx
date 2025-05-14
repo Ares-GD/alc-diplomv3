@@ -1,5 +1,7 @@
+// app/admin/packings/components/UnitTable.tsx
 'use client';
 import { Unit } from '@/app/admin/packings/types';
+import React from 'react';
 
 interface Props {
   units: Unit[];
@@ -7,17 +9,11 @@ interface Props {
   handleDeleteUnit: (id: number) => void;
 }
 
-export default function UnitTable({
-  units,
-  setEditingUnit,
-  handleDeleteUnit
-}: Props) {
+export default function UnitTable({ units, setEditingUnit, handleDeleteUnit }: Props) {
   return (
     <div className="mb-12 mt-12 overflow-x-auto">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold flex items-center">
-          Единицы измерения
-        </h2>
+        <h2 className="text-2xl font-bold flex items-center">Единицы измерения</h2>
         <button
           onClick={() => setEditingUnit({ id: 0, name: '' })}
           className="px-4 py-2 bg-[var(--color-accent)] text-[var(--color-dark)] rounded-lg hover:opacity-90 transition-opacity"
@@ -25,14 +21,13 @@ export default function UnitTable({
           Добавить единицу
         </button>
       </div>
-      
       <div className="bg-[var(--color-dark)] rounded-lg overflow-hidden shadow-md">
         <table className="min-w-full divide-y divide-[var(--color-gray)]">
           <thead className="bg-[var(--color-gray)]">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Название</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Действия</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Название</th>
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Действия</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-gray)]">
@@ -56,7 +51,6 @@ export default function UnitTable({
                 </td>
               </tr>
             ))}
-            
             {units.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-12 text-center text-[var(--color-gray)]">

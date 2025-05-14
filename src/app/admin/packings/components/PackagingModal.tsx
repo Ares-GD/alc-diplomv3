@@ -1,31 +1,34 @@
+// app/admin/packings/components/PackagingModal.tsx
+'use client';
 import { Packaging, Material, Unit, FormType } from '@/app/admin/packings/types';
+import React from 'react';
 
 interface Props {
   editingPacking: Packaging | null;
   materials: Material[];
   units: Unit[];
-  formTypes: FormType[]; // ✅ Добавлено
+  formTypes: FormType[];
   imagePreview: string | null;
   handleMaterialChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   handleUnitChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleFormTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // ✅ Добавлено
+  handleFormTypeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => void;
   handleButtonClick: () => void;
   handleSave: () => void;
   setEditingPacking: React.Dispatch<React.SetStateAction<Packaging | null>>;
   setImagePreview: React.Dispatch<React.SetStateAction<string | null>>;
-  fileInputRef: React.RefObject<HTMLInputElement | null>; // Исправлено на | null
+  fileInputRef: React.RefObject<HTMLInputElement>;
 }
 
 export default function PackagingModal({
   editingPacking,
   materials,
   units,
-  formTypes, // ✅ Добавлено
+  formTypes,
   imagePreview,
   handleMaterialChange,
   handleUnitChange,
-  handleFormTypeChange, // ✅ Добавлено
+  handleFormTypeChange,
   handleImageUpload,
   handleButtonClick,
   handleSave,
@@ -41,7 +44,6 @@ export default function PackagingModal({
         <h2 className="text-2xl font-bold mb-6 border-b border-[var(--color-gray)] pb-3">
           {editingPacking.id ? 'Редактировать' : 'Добавить'} упаковку
         </h2>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Левая колонка */}
           <div className="space-y-4">
@@ -54,7 +56,6 @@ export default function PackagingModal({
                 placeholder="Введите название упаковки"
               />
             </div>
-
             <div>
               <label className="block mb-2 text-sm font-medium">Материал</label>
               <select 
@@ -68,7 +69,6 @@ export default function PackagingModal({
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block mb-2 text-sm font-medium">Объем</label>
               <input 
@@ -82,7 +82,6 @@ export default function PackagingModal({
               />
             </div>
           </div>
-
           {/* Правая колонка */}
           <div className="space-y-4">
             <div>
@@ -98,21 +97,19 @@ export default function PackagingModal({
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block mb-2 text-sm font-medium">Тип формы</label>
               <select 
                 value={editingPacking.form_type_id || ''}
-                onChange={handleFormTypeChange} // ✅ Добавлено
+                onChange={handleFormTypeChange}
                 className="w-full px-4 py-2 border rounded-lg bg-[var(--color-dark)] text-white border-[var(--color-gray)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
               >
                 <option value="">Не выбрано</option>
-                {formTypes.map(formType => ( // ✅ Используется
+                {formTypes.map(formType => (
                   <option key={formType.id} value={formType.id}>{formType.name}</option>
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block mb-2 text-sm font-medium">Изображение</label>
               <div 
@@ -146,7 +143,6 @@ export default function PackagingModal({
             </div>
           </div>
         </div>
-
         <div className="flex justify-end space-x-4 pt-4 border-t border-[var(--color-gray)]">
           <button
             onClick={() => {

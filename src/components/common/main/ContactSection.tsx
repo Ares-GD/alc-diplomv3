@@ -184,7 +184,7 @@ export default function ContactPage() {
                     />
                     <label htmlFor="agreement" className="text-sm text-gray-300">
                       Даю согласие на обработку
-                      <a href="/policy" className="text-accent underline ml-1">
+                      <a href="/privacy" className="text-accent underline ml-1">
                         Политики конфиденциальности
                       </a>
                     </label>

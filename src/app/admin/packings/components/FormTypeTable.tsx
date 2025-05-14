@@ -1,5 +1,7 @@
+// app/admin/packings/components/FormTypeTable.tsx
 'use client';
 import { FormType } from '@/app/admin/packings/types';
+import React from 'react';
 
 interface Props {
   formTypes: FormType[];
@@ -7,40 +9,34 @@ interface Props {
   handleDeleteFormType: (id: number) => void;
 }
 
-export default function FormTypeTable({
-  formTypes,
-  setEditingFormType,
-  handleDeleteFormType
+export default function FormTypeTable({ 
+  formTypes, 
+  setEditingFormType, 
+  handleDeleteFormType 
 }: Props) {
   return (
     <div className="mb-12 mt-12 overflow-x-auto">
-      <div className="flex justify-between items-center mb-4  py-4">
-        <h2 className="text-2xl font-bold flex items-center">
-          Типы форм
-        </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Типы форм</h2>
         <button
           onClick={() => setEditingFormType({ id: 0, name: '' })}
-          className="px-4 py-2 bg-[var(--color-accent)] text-[var(--color-dark)] rounded-lg hover:opacity-90 transition-opacity text-sm"
+          className="px-4 py-2 bg-[var(--color-accent)] text-[var(--color-dark)] rounded-lg hover:opacity-90 transition-opacity"
         >
           Добавить тип формы
         </button>
       </div>
-      
       <div className="bg-[var(--color-dark)] rounded-lg overflow-hidden shadow-md">
         <table className="min-w-full divide-y divide-[var(--color-gray)]">
           <thead className="bg-[var(--color-gray)]">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Название</th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Действия</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Название</th>
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Действия</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-gray)]">
             {formTypes.map((formType) => (
-              <tr 
-                key={formType.id} 
-                className="hover:bg-[var(--color-gray)] transition-colors"
-              >
+              <tr key={formType.id} className="hover:bg-[var(--color-gray)] transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">{formType.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{formType.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right space-x-2">
@@ -59,7 +55,6 @@ export default function FormTypeTable({
                 </td>
               </tr>
             ))}
-            
             {formTypes.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-12 text-center text-[var(--color-gray)]">
