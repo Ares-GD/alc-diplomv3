@@ -28,7 +28,6 @@ export default function PackagingTable({
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Материал</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Объем</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Единица</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Тип формы</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Изображение</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Действия</th>
             </tr>
@@ -44,7 +43,6 @@ export default function PackagingTable({
                 <td className="px-6 py-4 whitespace-nowrap">{packing.material_name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{packing.volume}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{packing.unit_name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{packing.form_type_name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {packing.image && (
                     <Image

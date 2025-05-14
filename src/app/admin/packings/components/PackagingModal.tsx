@@ -97,19 +97,7 @@ export default function PackagingModal({
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block mb-2 text-sm font-medium">Тип формы</label>
-              <select 
-                value={editingPacking.form_type_id || ''}
-                onChange={handleFormTypeChange}
-                className="w-full px-4 py-2 border rounded-lg bg-[var(--color-dark)] text-white border-[var(--color-gray)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-              >
-                <option value="">Не выбрано</option>
-                {formTypes.map(formType => (
-                  <option key={formType.id} value={formType.id}>{formType.name}</option>
-                ))}
-              </select>
-            </div>
+
             <div>
               <label className="block mb-2 text-sm font-medium">Изображение</label>
               <div 
