@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       const buffer = await file.arrayBuffer();
       try {
         await fs.writeFile(uploadPath, Buffer.from(buffer));
-        imagePath = `/images/packings/${filename}`;
+        imagePath = `images/packings/${filename}`;
       } catch (err) {
         console.error('Ошибка записи файла:', err);
         return NextResponse.json(
@@ -195,7 +195,7 @@ export async function PUT(request: NextRequest) {
       const buffer = await file.arrayBuffer();
       try {
         await fs.writeFile(uploadPath, Buffer.from(buffer));
-        imagePath = `/images/packings/${filename}`;
+        imagePath = `images/packings/${filename}`;
         
         // Удаление старого файла, если он существует
         if (existingImage) {
