@@ -1,4 +1,6 @@
-// tailwind.config.js
+/**
+ * tailwind.config.js
+ */
 module.exports = {
   theme: {
     extend: {

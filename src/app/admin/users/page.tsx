@@ -33,7 +33,6 @@ export default function UsersPage() {
 
   const roleMapping = {
     director: 1,
-    admin: 2,
     seniorManager: 3,
     manager: 4,
     user: 5,

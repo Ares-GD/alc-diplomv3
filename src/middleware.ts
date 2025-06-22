@@ -15,13 +15,13 @@ export default withAuth(
 
       // Маппинг путей к необходимым ролям
       const roleMap: Record<string, string[]> = {
-        "/admin/dashboard": ["admin", "stmanager", "director", "manager"],
-        "/admin/orders": ["admin", "stmanager", "director", "manager"],
-        "/admin/packings": ["admin", "stmanager", "director", "manager"],
-        "/admin/categories": ["admin", "stmanager", "director", "manager"],
-        "/admin/users": ["admin", "stmanager", "director"],
-        "/admin/questions": ["admin", "stmanager", "director", "manager"],
-        "/admin/products": ["admin", "stmanager", "director", "manager"]
+        "/admin/dashboard": [ "stmanager", "director", "manager"],
+        "/admin/orders": ["stmanager", "director", "manager"],
+        "/admin/packings": [ "stmanager", "director"],
+        "/admin/categories": [ "stmanager", "director"],
+        "/admin/users": ["director"],
+        "/admin/questions": [ "stmanager", "director", "manager"],
+        "/admin/products": ["stmanager", "director"]
       }
 
       // Проверка прав доступа
