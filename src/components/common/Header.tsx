@@ -26,6 +26,10 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { data: session, status } = useSession();
 
+  // Определяем административные роли
+  const isAdminUser = status === "authenticated" && 
+    ["director", "manager", "stmanager"].includes(session?.user?.role || "");
+
   const HEADER_LINKS = {
     home: "/",
     cart: "/cart",
@@ -56,16 +60,10 @@ export default function Header() {
         icon: "FaTachometerAlt",
         text: "Панель администратора",
         href: "/admin/dashboard",
-        roles: ["director",`manager`, 'stmanager'],
+        roles: ["director", "manager", "stmanager"],
       },
     ],
   };
-
-  useEffect(() => {
-    if (status === "authenticated" && session.user?.role === "director") {
-      // Логика для директора
-    }
-  }, [status, session, router]);
 
   const getIconForMenuItem = (iconName: string) => {
     switch (iconName) {
@@ -88,9 +86,17 @@ export default function Header() {
 
   const filteredMenuItems = HEADER_LINKS.menuItems
       .filter((item: MenuItem) => {
+        // Показывать "Профиль" только для авторизованных
         if (item.text === "Профиль") return status === "authenticated";
-        if (item.roles && session?.user?.role)
-          return item.roles.includes(session.user.role);
+        
+        // Для пунктов с ограничением по ролям
+        if (item.roles) {
+          // Показывать только если пользователь авторизован и его роль есть в списке разрешенных
+          return status === "authenticated" && 
+                 item.roles.includes(session?.user?.role || "");
+        }
+        
+        // Все остальные пункты показываем всегда
         return true;
       })
       .filter(Boolean);
@@ -157,13 +163,13 @@ export default function Header() {
                           ? "Менеджер"
                           : session.user?.role === "stmanager"
                               ? "Ст. менеджер"
-                              : ""}
+                              : "Пользователь"}
                 </span>
                   </div>
               )}
 
-              {/* Скрытие корзины для директоров */}
-              {!(status === "authenticated" && session.user?.role === "director") && (
+              {/* Скрытие корзины только для администраторов */}
+              {!isAdminUser && (
                   <Link
                       href={HEADER_LINKS.cart}
                       className="relative p-2 hover:bg-gray-800 rounded-full transition-colors"
@@ -200,15 +206,15 @@ export default function Header() {
 
             {/* Мобильное меню */}
             <div className="md:hidden flex items-center gap-4">
-              {/* Скрытие корзины для директоров */}
-              {!(status === "authenticated" && session.user?.role === "director") && (
-                  <Link
-                      href={HEADER_LINKS.cart}
-                      className="relative p-2"
-                      aria-label="Корзина"
-                  >
-                    <FaShoppingCart className="text-2xl text-white" />
-                  </Link>
+              {/* Скрытие корзины только для администраторов */}
+              {!isAdminUser && (
+                <Link
+                  href={HEADER_LINKS.cart}
+                  className="relative p-2"
+                  aria-label="Корзина"
+                >
+                  <FaShoppingCart className="text-2xl text-white" />
+                </Link>
               )}
 
               <button
@@ -268,7 +274,7 @@ export default function Header() {
                                 ? "Менеджер"
                                 : session.user?.role === "stmanager"
                                     ? "Ст. менеджер"
-                                    : ""}
+                                    : "Пользователь"}
                       </p>
                     </div>
                 )}
